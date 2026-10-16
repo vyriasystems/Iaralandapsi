@@ -143,24 +143,6 @@
     });
   }
 
-  function initTimecode() {
-    const el = document.querySelector(".timecode");
-    if (!el) return;
-    const start = performance.now();
-    function tick() {
-      const t = Math.floor((performance.now() - start) / 10);
-      const frames = (t % 100).toString().padStart(2, "0");
-      const sec = Math.floor(t / 100) % 60;
-      const min = Math.floor(t / 6000) % 60;
-      const hrs = Math.floor(t / 360000);
-      el.textContent = `${hrs.toString().padStart(2, "0")}:${min
-        .toString()
-        .padStart(2, "0")}:${sec.toString().padStart(2, "0")}:${frames}`;
-      requestAnimationFrame(tick);
-    }
-    tick();
-  }
-
   function initSmooth() {
     if (!hasLenis || reduce) return null;
     const lenis = new Lenis({
@@ -375,7 +357,6 @@
 
   initCursor();
   initMagnetic();
-  initTimecode();
   runLoader();
 
   window.addEventListener("load", () => {
