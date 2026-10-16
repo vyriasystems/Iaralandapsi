@@ -24,8 +24,18 @@
 
 html { scroll-behavior: auto; }
 
-html.js body { overflow: hidden; }
-html.is-ready body { overflow: unset; }
+html.js:not(.is-ready),
+html.js:not(.is-ready) body {
+  overflow: hidden;
+}
+
+html.is-ready,
+html.is-ready body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
 body {
   font-family: var(--font-body);
@@ -42,7 +52,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   cursor: none;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 
 main, .footer {
@@ -247,7 +257,12 @@ button { font: inherit; background: none; border: none; color: inherit; }
 .loader__bar--top { top: 0; }
 .loader__bar--bottom { bottom: 0; }
 
-html.is-ready .loader { pointer-events: none; }
+html.is-ready .loader,
+.loader.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 
 /* ——— Nav ——— */
 .nav {
@@ -352,7 +367,9 @@ html.is-ready .loader { pointer-events: none; }
 /* ——— Hero ——— */
 .hero {
   position: relative;
+  min-height: 100vh;
   min-height: 100svh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   overflow: hidden;

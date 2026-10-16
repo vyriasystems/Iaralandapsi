@@ -11,10 +11,33 @@
   const progressBar = document.querySelector(".progress i");
   const cursor = document.querySelector(".cursor");
   const nav = document.querySelector(".nav");
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   let lenis = null;
+  let opened = false;
 
   function ready() {
-    document.documentElement.classList.add("is-ready");
+    if (typeof window.__openPage === "function") window.__openPage();
+    else document.documentElement.classList.add("is-ready");
+  }
+
+  function revealHeroFallback() {
+    document.querySelectorAll(".hero__title .word").forEach((w) => {
+      w.style.transform = "none";
+    });
+    document.querySelectorAll(".hero__reveal, .hero__sub, .hero__scroll, .hero__meta").forEach((el) => {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+    });
+  }
+
+  function openPage() {
+    ready();
+    if (opened) return;
+    opened = true;
+    if (hasGsap && !reduce) playHero();
+    else revealHeroFallback();
   }
 
   function playHero() {
@@ -42,23 +65,15 @@
   }
 
   function runLoader() {
-    if (!loader) {
-      ready();
-      playHero();
-      return;
-    }
-
-    if (reduce || !hasGsap) {
-      loader.style.display = "none";
-      ready();
+    if (!loader || reduce || !hasGsap) {
+      openPage();
       return;
     }
 
     const obj = { n: 0 };
     const tl = gsap.timeline({
       onComplete: () => {
-        ready();
-        playHero();
+        openPage();
         if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
       },
     });
@@ -144,10 +159,11 @@
   }
 
   function initSmooth() {
-    if (!hasLenis || reduce) return null;
+    if (!hasLenis || reduce || coarse || isIOS) return null;
     const lenis = new Lenis({
       duration: 1.15,
       smoothWheel: true,
+      syncTouch: false,
       wheelMultiplier: 0.92,
     });
 
@@ -350,17 +366,25 @@
     }
   }
 
-  if (hasGsap) {
-    gsap.set(".hero__title .word", { yPercent: 120 });
-    gsap.set(".hero__reveal, .hero__sub, .hero__scroll, .hero__meta", { opacity: 0 });
-  }
-
   initCursor();
   initMagnetic();
-  runLoader();
 
-  window.addEventListener("load", () => {
+  if (document.documentElement.classList.contains("is-ready")) {
+    openPage();
+  } else {
+    if (hasGsap && !reduce) {
+      gsap.set(".hero__title .word", { yPercent: 120 });
+      gsap.set(".hero__reveal, .hero__sub, .hero__scroll, .hero__meta", { opacity: 0 });
+    }
+    runLoader();
+    setTimeout(openPage, 3800);
+  }
+
+  function bootScroll() {
     lenis = initSmooth();
     if (!reduce) initScroll(lenis);
-  });
+  }
+
+  if (document.readyState === "complete") bootScroll();
+  else window.addEventListener("load", bootScroll);
 })();
